@@ -1,1 +1,1 @@
-This is for AWS related techincal refrences
+This is for AWS self-study references
