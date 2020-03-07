@@ -8,9 +8,9 @@ import urllib.parse
 from urllib.parse import unquote_plus
 
 
-S3_BUCKET_NAME = '106047455-publicshare'
+S3_BUCKET_NAME = 'YOUR_BUCKET_NAME'
 DURATION_SECONDS = '3600'
-SNS_TOPIC = 'arn:aws:sns:us-east-1:211259373114:send-s3-presignedurl'
+SNS_TOPIC = 'YOUR_SNS_TOPIC_NAME'
 
 ## shorten the presigned url length via tinyurl
 def tiny_url(url):
