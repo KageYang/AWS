@@ -1,1 +1,1 @@
-This is for AWS self-study references
+This is for AWS SA self-study assignments
