@@ -10,7 +10,6 @@ from urllib.parse import unquote_plus
 
 S3_BUCKET_NAME = 'YOUR_BUCKET_NAME'
 DURATION_SECONDS = '3600'
-SNS_TOPIC = 'YOUR_SNS_TOPIC_NAME'
 
 ## shorten the presigned url length via tinyurl
 def tiny_url(url):
