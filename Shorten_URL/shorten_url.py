@@ -10,10 +10,11 @@ def tiny_url(url):
     tinyurl = urllib.request.urlopen(apiurl + url).read()
     return tinyurl.decode("utf-8")
 
+input = sys.argv [1]
 
 
 # place csv filename exported from EventEngine
-with open('test-teams.csv', mode='r') as csvfile:
+with open(input, mode='r') as csvfile:
 
   rows = csv.reader(csvfile, delimiter=',')
   next(rows)
