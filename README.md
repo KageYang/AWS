@@ -1,1 +1,1 @@
-This is for AWS SA self-study assignments
+This is for AWS related examples
