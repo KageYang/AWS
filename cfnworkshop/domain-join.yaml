@@ -1,0 +1,107 @@
+Metadata:
+     'AWS::CloudFormation::Interface':
+       ParameterGroups:
+         - Label:
+             default: EC2 Configuration
+           Parameters:
+             - InstanceType
+             - KeyName
+             - SubnetID
+             - SecurityGroupID
+             - ImageId
+   Parameters:
+     KeyName:
+       Default: Name of an existing EC2 KeyPair to enable SSH access to the instance
+       Type: 'AWS::EC2::KeyPair::KeyName'
+       ConstraintDescription: must be the name of an existing EC2 KeyPair.
+     InstanceType:
+       Description: WebServer EC2 instance type
+       Type: String
+       Default: t2.micro
+     SubnetID:
+       Type: 'AWS::EC2::Subnet::Id'
+     SecurityGroupID:
+       Type: 'AWS::EC2::SecurityGroup::Id'
+     ImageId:
+       Default: ami-xxxxxxxxxx
+       Type: 'AWS::EC2::Image::Id'
+     Hostname:
+       Description: >-
+         Please ensure Name value is between 1 and 15 characters in length and
+         contains only alphanumeric or hyphen characters
+       Type: String
+     DomainCredential:
+       Description: Password for Domain UserData
+       Type: String
+       MinLength: 3
+       MaxLength: 25
+       NoEcho: true
+   Resources:
+     myInstanceProfile:
+       Type: 'AWS::IAM::InstanceProfile'
+       Properties:
+         Roles:
+           - ec2-describe-role
+     myEC2Instance:
+       Type: 'AWS::EC2::Instance'
+       Metadata:
+         'AWS::CloudFormation::Init':
+           configSets:
+             ascending:
+               - config1
+               - config2
+           config1:
+             files:
+
+               'C:\runonce\join.ps1':
+                 content: !Sub |
+                   $Domain = "awspoc.com"
+                   $username = "winosadmin"
+                   $password = "${DomainCredential}" | ConvertTo-SecureString -asPlainText -Force
+                   $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+                   Add-Computer -DomainName $Domain -Credential $credential -Restart -NewName "${Hostname}"
+
+           config2:
+             commands:
+               1-join:
+                 command: !Sub >-
+                   powershell.exe
+                   C:\runonce\join.ps1
+                 waitAfterCompletion: forever
+       Properties:
+         IamInstanceProfile: !Ref myInstanceProfile
+         KeyName: !Ref KeyName
+         ImageId: !Ref ImageId
+         InstanceType: !Ref InstanceType
+         SubnetId: !Ref SubnetID
+         Monitoring: true
+         SecurityGroupIds:
+           - !Ref SecurityGroupID
+         Tags:
+           - Key: Name
+             Value: !Ref Hostname
+         UserData:
+           'Fn::Base64': !Sub >
+             -
+
+             <powershell>
+
+             cfn-init.exe -v --stack ${AWS::StackName} --resource myEC2Instance
+             --region ${AWS::Region} --configset ascending
+
+             cfn-signal.exe -e $lastexitcode --stack ${AWS::StackName} --resource
+             myEC2Instance --region ${AWS::Region}
+
+             </powershell>
+
+             -
+
+             <script>
+
+             echo ${DomainCredential} >> %SystemRoot%\Temp\test.log
+
+             </script>
+       CreationPolicy:
+         ResourceSignal:
+           Count: 1
+           Timeout: PT20M
