@@ -37,11 +37,6 @@ Metadata:
        MaxLength: 25
        NoEcho: true
    Resources:
-     myInstanceProfile:
-       Type: 'AWS::IAM::InstanceProfile'
-       Properties:
-         Roles:
-           - ec2-describe-role
      myEC2Instance:
        Type: 'AWS::EC2::Instance'
        Metadata:
@@ -69,7 +64,6 @@ Metadata:
                    C:\runonce\join.ps1
                  waitAfterCompletion: forever
        Properties:
-         IamInstanceProfile: !Ref myInstanceProfile
          KeyName: !Ref KeyName
          ImageId: !Ref ImageId
          InstanceType: !Ref InstanceType
