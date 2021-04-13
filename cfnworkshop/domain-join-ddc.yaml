@@ -1,0 +1,139 @@
+   Metadata:
+     'AWS::CloudFormation::Interface':
+       ParameterGroups:
+         - Label:
+             default: EC2 Configuration
+           Parameters:
+             - InstanceType
+             - KeyName
+             - SubnetID
+             - SecurityGroupID
+             - ImageId
+   Parameters:
+     KeyName:
+       Default: Name of an existing EC2 KeyPair to enable SSH access to the instance
+       Type: 'AWS::EC2::KeyPair::KeyName'
+       ConstraintDescription: must be the name of an existing EC2 KeyPair.
+     InstanceType:
+       Description: WebServer EC2 instance type
+       Type: String
+       Default: t3.small
+     SubnetID:
+       Type: 'AWS::EC2::Subnet::Id'
+     SecurityGroupID:
+       Type: 'AWS::EC2::SecurityGroup::Id'
+     ImageId:
+       Default: ami-02d86fef6db05f3d9
+       Type: 'AWS::EC2::Image::Id'
+     Hostname:
+       Description: >-
+         Please ensure Name value is between 1 and 15 characters in length and
+         contains only alphanumeric or hyphen characters
+       Type: String
+     DomainName:
+       Description: Domain name of Active Directory
+       Type: String
+       Default: awspocc.com
+     DomainUsername:
+       Description: Username for Domain UserData
+       Type: String
+     DomainCredential:
+       Description: Password for Domain UserData
+       Type: String
+       MinLength: 3
+       MaxLength: 25
+       NoEcho: true
+     ADDCIPAddress:
+       Description: IP Address of Active Directory Domain Controller
+       Type: String
+       Default: 172.31.27.185
+   Resources:
+     myEC2Instance:
+       Type: 'AWS::EC2::Instance'
+       Metadata:
+         'AWS::CloudFormation::Init':
+           configSets:
+             ascending:
+               - config1
+               - config2
+               - config3
+               - config4
+               - config5
+               - config6
+               - config7
+               - config8
+           config1:
+             files:
+               'C:\runonce\dns.ps1':
+                 content: !Sub |
+                   wmic nicconfig where "IPEnabled=TRUE" call SetDNSServerSearchOrder ("${ADDCIPAddress}")
+           config2:
+             commands:
+               1-execute:
+                 command: !Sub >-
+                   powershell.exe
+                   C:\runonce\dns.ps1
+                 waitAfterCompletion: 0
+           config3:
+             commands:
+               2-execute:
+                 command: !Sub >-
+                   C:\script1.bat
+                 waitAfterCompletion: 0
+           config4:
+             files:
+               'C:\runonce\join.ps1':
+                 content: !Sub |
+                   $Domain = "${DomainName}"
+                   $username = "${DomainUsername}"
+                   $password = "${DomainCredential}" | ConvertTo-SecureString -asPlainText -Force
+                   $credential = New-Object System.Management.Automation.PSCredential($username,$password)
+                   Add-Computer -DomainName $Domain -Credential $credential -Restart -NewName "${Hostname}" -Force
+           config5:
+             commands:
+               1-join:
+                 command: !Sub >-
+                   powershell.exe
+                   C:\runonce\join.ps1
+                 waitAfterCompletion: forever
+           config6:
+             commands:
+               1-ddc-step1:
+                 command: !Sub >-
+                   powershell.exe
+                   C:\ddc-step1.ps1
+           config7:
+             commands:
+               1-ddc-step2:
+                 command: !Sub >-
+                   powershell.exe
+                   C:\ddc-step2.ps1
+           config8:
+             commands:
+               1-signal-resource:
+                 command: !Sub >
+                   cfn-signal.exe -e %ERRORLEVEL% --resource myEC2Instance --stack ${AWS::StackId} --region ${AWS::Region}    
+
+       Properties:
+         KeyName: !Ref KeyName
+         ImageId: !Ref ImageId
+         InstanceType: !Ref InstanceType
+         SubnetId: !Ref SubnetID
+         Monitoring: true
+         SecurityGroupIds:
+           - !Ref SecurityGroupID
+         Tags:
+           - Key: Name
+             Value: !Ref Hostname
+         UserData:
+           'Fn::Base64': !Sub |
+             <script>
+
+             echo ${DomainCredential} >> %SystemRoot%\Temp\test.log
+             cfn-init.exe -v -s ${AWS::StackId} -r myEC2Instance --configsets ascending --region ${AWS::Region}
+             </script>
+             
+       CreationPolicy:
+         ResourceSignal:
+           Count: 1
+           Timeout: PT45M
