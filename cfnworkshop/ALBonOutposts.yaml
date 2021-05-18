@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: (iJump) - Application Load Balancer on Outposts.
+
+Parameters:
+  LoadBalancerSecurityGroup:
+    Type: String
+  VpcId:
+    Type: String
+  OutpostsSubnetId:
+    Type: String
+  StoreFrontInstanceId1:
+    Type: String
+  StoreFrontInstanceId2:
+    Type: String
+    
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: ALBonOutposts
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      SubnetMappings:
+        - SubnetId: !Ref OutpostsSubnetId
+      Type: application
+  
+  HTTPLoadBalancerListener:
+    DependsOn: LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupStoreFront
+  
+  TargetGroupStoreFront:
+    DependsOn: LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: TargetGroupStoreFront
+      VpcId: !Ref VpcId
+      Port: 443
+      Protocol: HTTPS
+      TargetType: instance
+      Targets:
+        - Id: !Ref StoreFrontInstanceId1
+        - Id: !Ref StoreFrontInstanceId2
