@@ -1,1 +1,1 @@
-## CloudFormation Examplte Template for deploying Citrix solution
+## CloudFormation Example Template for deploying Citrix solution
