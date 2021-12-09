@@ -65,8 +65,8 @@ print('Allocating EIP to new OpenSwan ec2 instance !!!!')
 ## Pre-Allocated EIP ID
 response = ec2.associate_address(AllocationId='eipalloc-xxxxxxxxxxxxxx',
                                      InstanceId=instance_id)
-
-hostname ="10.200.2.106"
+## Host IP
+hostname ="xxx.xxx.xxx.xxx"
 
 react = os.system("ping -c 75 " + hostname)
 	
