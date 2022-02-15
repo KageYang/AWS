@@ -1,5 +1,4 @@
 import boto3
-from boto.ec2 import connect_to_region
 
 # Command Line input EC2 Instance ID
 instance = input('InstanceID : ')
