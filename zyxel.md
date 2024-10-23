@@ -41,6 +41,8 @@
 - RAG
     1. https://aws.amazon.com/blogs/machine-learning/improve-rag-accuracy-with-fine-tuned-embedding-models-on-amazon-sagemaker/
 
+- Best practice for protect prompt injection
+    1. https://docs.aws.amazon.com/prescriptive-guidance/latest/llm-prompt-engineering-best-practices/best-practices.html
 
 
 
