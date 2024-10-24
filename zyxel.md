@@ -18,9 +18,8 @@
 
 
 ## Lab Instructions ##
-- #### Click this link to join the event : https://catalog.us-east-1.prod.workshops.aws/join?access-code=808f-0200d3-72
-
-- #### second link : https://catalog.us-east-1.prod.workshops.aws/join?access-code=f4bf-0ae805-3c
+- #### Click this link to join the event : 
+- #### second link :
 - #### Workshop Guide : https://catalog.workshops.aws/amazon-bedrock
 
 
